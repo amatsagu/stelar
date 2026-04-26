@@ -1,0 +1,53 @@
+// Example of pushing, postfix math, and basic stack operations.
+
+stack secStack // We define new, global stack | by default there's "main" & "errors" global stacks defined.
+
+proc main
+  stack localStack // we also define local stack that can be used only for as long as main procedure remains active.
+
+  // Pushes 10, 20, and 30 to the default stack.
+  // We start with "main" stack as default but specific instructions may temporarily change it.
+  put 10 20 30 ;
+
+  // We explicitedly say to add 40, 50 and 60 into "main" stack.
+  main.put 40 50 60 ;
+
+  // We take from top of "main" stack 2 numbers: 60, 50.
+  // We do math: 50-60 (= -10).
+  // We pop used values and put result (10) back into the "main" stack.
+  // So after operation, "main" stack has: 10, 20, 30, 40, -10 (size = 5)
+  main.- _ _ ;
+
+  // We can "peek" at values instead consuming them, this will take from top: 10, 40.
+  // Do math: 40 + 10 (=50).
+  // We don't pop anything (because + has 2 values provided) and only put result: 10, 20, 30, 40, 10, 50 (size = 6)
+  + .0 .1 ;
+  
+  // We can only partially met + operation argument requirements.
+  // We take peek from 5th element from top of "main" stack and then pop value from top: 20, 50
+  // Do math: 50 + 20 (=70).
+  // We only pop 1 value and then add result, so we get result: 10, 20, 30, 40, 10, 70 (size = 6)
+  main.+ .4 _ ;
+
+  secStack.put 2 5 7 ;
+
+  with secStack
+    put 9 ; // goes to secStack, inside this clouse, our with instruction changes default stack.
+    put main.pop // it moves top element from "main" stack to "secStack" stack.
+  end
+
+  // Swaps places in stack so from: 2, 5, 7, 9
+  // We end up with: 2, 9, 7, 5
+  // [1st -> 3rd, 3rd -> 1st]
+  secStack.swap .0 .2  .1 .3 ;
+
+  pop // removes 1 top element from "main" stack
+
+  clone // takes top element and duplicates it
+
+  // Adds 5 (because size = 5 after pop earlier) to the top of stack.
+  // We could do same with defined stack name: main.put main.size
+  put size ;
+
+  reset // removes all elements from "main" stack
+end

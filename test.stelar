@@ -1,0 +1,5 @@
+proc main
+  put 1 2 ;
+  + .0 .1 ;
+  print "Result: " pop ;
+end

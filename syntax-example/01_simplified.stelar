@@ -1,0 +1,12 @@
+// Example of pushing, postfix math, and basic stack operations.
+
+stack secStack
+
+proc main
+  put 10 20 30 40 50 60 ;
+  - // same as main.- _ _ ;, - operator by default works on 2 elements from top of stack.
+  + .0 .1 ; + .4 _ ;
+  secStack.put 2 5 7 9 pop; // pop still means main.pop because default is still main stack.
+  secStack.swap .0 .2  .1 .3 ;
+  pop clone put size ; reset
+end

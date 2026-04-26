@@ -1,0 +1,57 @@
+// Example of using for loop, strict typing, and sys.err handling.
+
+proc print_loop
+  require int int ;
+  stack res
+
+  for pop pop i
+    print "Current iteration: " i ;
+    res.* i 2 ;
+  end
+
+  if == errors.size 1 // We use constant 1, outside any stack
+    print "FOR LOOP ERROR: " errors.pop ;
+  end
+
+  res.+ res ;
+
+  if == errors.size 1
+    print "REDUCER ERROR: " errors.pop ;
+    res.put 0 ; // We add 0 so stack is not empty.
+  end
+
+  put res.pop ;
+end
+
+proc example_switch
+  require string ;
+
+  main.clone
+  switch main.pop
+    case "foo"
+      // code here
+    end
+    case "bar" /* code here, as 1-liner */ end
+    case "zee" print main.0 end
+    default /* code */ end
+  end
+end
+
+proc main
+  // Prepare start - finish ranges to use by for loop in print_loop procedure
+  5 0 
+  
+  print_loop
+
+  // We should probably check for this because technically pop may fail if stack is empty?
+  if == errors.size 1
+    print "PUT/POP ERROR: " errors.pop ;
+    exit 0
+  end
+
+  if == main.size 0
+    print "We received no final result from reduction, main stack is empty!"
+  else
+    print "Result: " pop ;
+  end 
+end
