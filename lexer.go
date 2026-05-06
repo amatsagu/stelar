@@ -48,10 +48,14 @@ const (
 	PRINT_TOKEN
 	EXIT_TOKEN
 	SWAP_TOKEN
+	UNSAFE_PROC_TOKEN // ~proc
+	RETURN_TOKEN
 )
 
 var keywords = map[string]TokenType{
 	"proc":    PROC_TOKEN,
+	"~proc":   UNSAFE_PROC_TOKEN,
+	"return":  RETURN_TOKEN,
 	"end":     END_TOKEN,
 	"stack":   STACK_TOKEN,
 	"put":     PUT_TOKEN,
@@ -141,6 +145,22 @@ func (l *Lexer) NextToken() Token {
 			l.readChar()
 			literal := string(ch) + string(l.ch)
 			tok = l.newToken(EQ_TOKEN, literal)
+		} else {
+			tok = l.newToken(ILLEGAL_TOKEN, string(l.ch))
+		}
+	case '~':
+		if l.peekChar() == 'p' {
+			l.readChar() // consume ~
+			ident := l.readIdentifier()
+			literal := "~" + ident
+			if tokType, ok := keywords[literal]; ok {
+				tok.Type = tokType
+				tok.Literal = literal
+				tok.Line = l.line
+				tok.Column = l.column - len(literal) + 1 // Adjust column back to start of ~
+				return tok
+			}
+			tok = l.newToken(ILLEGAL_TOKEN, "~"+ident)
 		} else {
 			tok = l.newToken(ILLEGAL_TOKEN, string(l.ch))
 		}

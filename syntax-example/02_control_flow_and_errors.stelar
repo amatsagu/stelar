@@ -1,6 +1,6 @@
 // Example of using for loop, strict typing, and sys.err handling.
 
-proc print_loop
+~proc print_loop
   require int int ;
   stack res
 
@@ -23,7 +23,7 @@ proc print_loop
   put res.pop ;
 end
 
-proc example_switch
+~proc example_switch
   require string ;
 
   main.clone
