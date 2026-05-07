@@ -5,11 +5,12 @@ import (
 )
 
 type Operation struct {
-	Type   TokenType
-	Value  string
-	JumpTo int // Index of the target operation in the IR array
-	Line   int
-	Column int
+	Type     TokenType
+	Value    string
+	JumpTo   int // Index of the target operation in the IR array
+	Line     int
+	Column   int
+	IsGreedy bool // When operator consumes arguments until ';' (stop mark)
 }
 
 type Parser struct {
@@ -48,7 +49,9 @@ func (p *Parser) Parse() ([]Operation, []CompilerError) {
 		}
 
 		switch tok.Type {
-		case IF_TOKEN, FOR_TOKEN, SWITCH_TOKEN, PROC_TOKEN, UNSAFE_PROC_TOKEN:
+		case PUT_TOKEN, PRINT_TOKEN, BIND_TOKEN, REQUIRE_TOKEN:
+			op.IsGreedy = true
+		case IF_TOKEN, FOR_TOKEN, SWITCH_TOKEN, PROC_TOKEN, UNSAFE_PROC_TOKEN, WITH_TOKEN:
 			stack = append(stack, len(p.ir))
 		case ELSE_TOKEN:
 			if len(stack) == 0 {
@@ -78,7 +81,7 @@ func (p *Parser) Parse() ([]Operation, []CompilerError) {
 			openingOp := &p.ir[openingIdx]
 
 			switch openingOp.Type {
-			case IF_TOKEN, ELSE_TOKEN, SWITCH_TOKEN, PROC_TOKEN, UNSAFE_PROC_TOKEN:
+			case IF_TOKEN, ELSE_TOKEN, SWITCH_TOKEN, PROC_TOKEN, UNSAFE_PROC_TOKEN, WITH_TOKEN:
 				openingOp.JumpTo = len(p.ir)
 			case FOR_TOKEN:
 				openingOp.JumpTo = len(p.ir) + 1
