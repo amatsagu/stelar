@@ -186,8 +186,14 @@ func (l *Lexer) NextToken() Token {
 			tok.Type = LookupIdent(tok.Literal)
 			return tok
 		} else if isDigit(l.ch) {
-			tok.Type = INTEGER_TOKEN
 			tok.Literal = l.readNumber()
+			if l.ch == '.' && isDigit(l.peekChar()) {
+				l.readChar() // consume .
+				tok.Literal += "." + l.readNumber()
+				tok.Type = FLOAT_TOKEN
+			} else {
+				tok.Type = INTEGER_TOKEN
+			}
 			return tok
 		} else {
 			tok = l.newToken(ILLEGAL_TOKEN, string(l.ch))
