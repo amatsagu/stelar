@@ -136,34 +136,9 @@ func (a *Analyzer) analyzeOp(op Operation) *CompilerError {
 		return a.handleMathGreedy(targetStack, op)
 
 	case GT_TOKEN, LT_TOKEN, EQ_TOKEN:
-		// Comparison operators: same hybrid logic as math
 		return a.handleMathGreedy(targetStack, op)
 
-	case IF_TOKEN, ELSE_TOKEN, SWITCH_TOKEN, CASE_TOKEN, DEFAULT_TOKEN:
-		return nil
-
-	case FOR_TOKEN:
-		// for pop pop i
-		// For simplicity, skip the pop pop part (they are handled by their own analyzeOp if they were tokens)
-		// But in Stelar, 'for' is prefix-arity too?
-		// "for pop pop i" -> 'pop', 'pop' are arguments to 'for'.
-		// Then 'i' is the loop variable.
-		_, err := a.resolveExpression(targetStack)
-		if err != nil {
-			return err
-		}
-		_, err = a.resolveExpression(targetStack)
-		if err != nil {
-			return err
-		}
-
-		a.pos++
-		if a.pos >= len(a.ir) || a.ir[a.pos].Type != IDENT_TOKEN {
-			return &CompilerError{op.Line, op.Column, op.Value, "for loop missing iteration variable"}
-		}
-		iterVar := a.ir[a.pos].Value
-		// Bind iteration variable to an arbitrary internal index or just mark as INT
-		a.binds[iterVar] = BindInfo{targetStack, -1, INTEGER_TOKEN}
+	case IF_TOKEN, ELSE_TOKEN, FOR_TOKEN, SWITCH_TOKEN, CASE_TOKEN, DEFAULT_TOKEN:
 		return nil
 
 	case PROC_TOKEN:
@@ -241,7 +216,6 @@ func (a *Analyzer) resolveExpression(targetStack string) (TokenType, *CompilerEr
 		return ILLEGAL_TOKEN, &CompilerError{0, 0, "", "unexpected end of IR"}
 	}
 
-	// Check if next token is a block keyword - if so, it's not an expression argument
 	next := a.ir[a.pos+1]
 	switch next.Type {
 	case IF_TOKEN, ELSE_TOKEN, FOR_TOKEN, SWITCH_TOKEN, CASE_TOKEN, DEFAULT_TOKEN, END_TOKEN, PROC_TOKEN, UNSAFE_PROC_TOKEN, WITH_TOKEN, SEMICOLON_TOKEN:
@@ -304,9 +278,15 @@ func (a *Analyzer) resolveExpression(targetStack string) (TokenType, *CompilerEr
 		if err != nil {
 			return ILLEGAL_TOKEN, err
 		}
+		if t1 == STRING_TOKEN {
+			return ILLEGAL_TOKEN, &CompilerError{exprOp.Line, exprOp.Column, exprOp.Value, fmt.Sprintf("type error: math operator '%s' does not support string arguments", exprOp.Value)}
+		}
 		t2, err := a.resolveExpression(exprTarget)
 		if err != nil {
 			return ILLEGAL_TOKEN, err
+		}
+		if t2 == STRING_TOKEN {
+			return ILLEGAL_TOKEN, &CompilerError{exprOp.Line, exprOp.Column, exprOp.Value, fmt.Sprintf("type error: math operator '%s' does not support string arguments", exprOp.Value)}
 		}
 
 		if isComparisonOp(exprOp.Type) {
@@ -390,6 +370,10 @@ func (a *Analyzer) handleMathGreedy(targetStack string, op Operation) *CompilerE
 			return &CompilerError{op.Line, op.Column, op.Value, fmt.Sprintf("legacy operation '%s' requires 2 elements on '%s'", op.Value, targetStack)}
 		}
 
+		if t1 == STRING_TOKEN || t2 == STRING_TOKEN {
+			return &CompilerError{op.Line, op.Column, op.Value, fmt.Sprintf("type error: math operator '%s' does not support string arguments", op.Value)}
+		}
+
 		resType := INTEGER_TOKEN
 		if !isComparisonOp(op.Type) && (t1 == FLOAT_TOKEN || t2 == FLOAT_TOKEN) {
 			resType = FLOAT_TOKEN
@@ -418,6 +402,10 @@ func (a *Analyzer) handleMathGreedy(targetStack string, op Operation) *CompilerE
 			return err
 		}
 
+		if typ == STRING_TOKEN {
+			return &CompilerError{op.Line, op.Column, op.Value, fmt.Sprintf("type error: math operator '%s' does not support string arguments", op.Value)}
+		}
+
 		if argCount == 0 {
 			finalType = typ
 		} else if typ == FLOAT_TOKEN {
@@ -432,6 +420,9 @@ func (a *Analyzer) handleMathGreedy(targetStack string, op Operation) *CompilerE
 		t2, ok := a.stacks[targetStack].Pop()
 		if !ok {
 			return &CompilerError{op.Line, op.Column, op.Value, fmt.Sprintf("operation '%s' with 1 arg requires 1 more element on '%s'", op.Value, targetStack)}
+		}
+		if t2 == STRING_TOKEN {
+			return &CompilerError{op.Line, op.Column, op.Value, fmt.Sprintf("type error: math operator '%s' does not support string arguments", op.Value)}
 		}
 		if t2 == FLOAT_TOKEN {
 			finalType = FLOAT_TOKEN
