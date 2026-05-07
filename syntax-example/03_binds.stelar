@@ -1,0 +1,23 @@
+// Managing multiple stacks and using compile-time binds.
+
+stack physics_engine
+stack rendering_engine
+
+proc calculate_velocity
+  // Push data to physics
+  with physics_engine
+    put 150 20 ; // Let's say these are Speed and Friction
+  end
+  
+  rendering_engine.put 60 ; // Let's assume it's target fps count
+
+  // Compile-time Binds (Zero runtime cost)
+  bind speed physics_engine.0 ;
+  bind friction physics_engine.1 ;
+  bind fps rendering_engine.0 ;
+
+  // Math: (speed - friction) * fps
+  - speed friction ;
+  * fps _ ;
+  print "Calculated Velocity: " pop ;
+end
