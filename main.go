@@ -112,5 +112,15 @@ func processFile(filepath string, config *Config) {
 		DebugPrintIR(ir)
 	}
 
-	// TODO: Do something with IR (lol)
+	analyzer := NewAnalyzer(filepath, sourceCode, ir)
+	aErrs := analyzer.Analyze()
+	if len(aErrs) != 0 {
+		fmt.Printf("ERROR :: Detected %d error(s) during static analysis:\n", len(aErrs))
+		for _, err := range aErrs {
+			ReportError(filepath, sourceCode, err.Line, err.Column, err.Literal, err.Message)
+		}
+		os.Exit(1)
+	}
+
+	// TODO: Next step: Generate C code from IR
 }
