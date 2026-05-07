@@ -2,14 +2,14 @@
 
 ## Evaluation Rules
 1. **Scanner:** Tokenizes input into symbols, literals, and keywords.
-2. **Arity Lookup:** Every token has a defined arity N.
-3. **Recursive Descent:** When the compiler hits a token with arity N, it recursively resolves the next N sub-expressions before applying the current operation.
+2. **Linear IR Generation:** Converts tokens into a flat, contiguous array of `Operation` structs. This stage resolves control flow (jumps for `if`, `else`, `for`, `switch`) and performs early syntax validation.
+3. **C-Transpilation:** Generates optimized C code from the Linear IR, leveraging the pre-calculated jump targets and validated structure.
 
-## Transpilation Strategy (Go -> C)
-Stelar is designed for a single-pass transpilation to C.
-- **Stacks:** Implemented as dynamic arrays in C (`realloc` strategy) with a 2x growth factor and 0.25x shrink hysteresis to prevent memory bloat.
-- **Heap Elision:** Local stacks defined inside `proc` blocks are transpiled to local C structs. `clang -O3` will typically optimize these entirely into registers.
-- **Type Checking:** The compiler maintains a shadow `TypeStack` during the parsing phase to validate `require` statements and struct field access at compile-time.
+## Compilation Pipeline
+The compiler follows a multi-stage architecture:
+- **Frontend:** Lexical analysis and Linear IR construction.
+- **Middle-end:** (Planned) IR-level optimizations and type checking.
+- **Backend:** C code generation and native binary compilation via `clang`/`gcc`/`msvc`.
 
 ## Implementation Roadmap
 Since the end goal is a self-hosted compiler, the project will follow a strict bootstrapping sequence:

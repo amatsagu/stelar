@@ -92,7 +92,25 @@ func processFile(filepath string, config *Config) {
 
 	sourceCode := string(content)
 
-	// TODO
-	// Start using Lexer and write basic compiler
-	fmt.Println(sourceCode)
+	lexer := NewLexer(sourceCode)
+	parser := NewParser(lexer)
+
+	fmt.Printf("INFO :: Parsing \"%s\" file...\n", filepath)
+	ir, errs := parser.Parse()
+	if len(errs) != 0 {
+		fmt.Printf("ERROR :: Detected %d error(s) while generating IR:\n", len(errs))
+
+		for _, err := range errs {
+			ReportError(filepath, sourceCode, err.Line, err.Column, err.Literal, err.Message)
+		}
+
+		os.Exit(1)
+	}
+
+	if config.Debug {
+		fmt.Printf("DEBUG :: Generated IR for \"%s\":\n", filepath)
+		DebugPrintIR(ir)
+	}
+
+	// TODO: Do something with IR (lol)
 }
