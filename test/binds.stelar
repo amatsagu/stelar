@@ -1,0 +1,13 @@
+stack physics
+
+proc main
+  with physics
+    put 100 9.8 ;
+  end
+
+  bind speed physics.0 ;
+  bind gravity physics.1 ;
+
+  * speed gravity ;
+  print "Result: " pop ;
+end

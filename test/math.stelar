@@ -1,0 +1,15 @@
+proc main
+  // Greedy math
+  + 10 20 30 ;
+  
+  // Legacy math
+  10 20 +
+  
+  // Mixed types
+  * 10 2.5 ;
+  
+  // Sub-expressions
+  - 100 * 2 5 ; // 100 - 10 = 90
+  
+  print "Math results verified" ;
+end

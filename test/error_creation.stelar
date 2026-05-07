@@ -1,0 +1,10 @@
+~proc throw_error
+  errors.put "Handled error" ;
+end
+
+proc main
+  // errors.put "This would fail" ;
+  throw_error
+  print "Errors count: " errors.size ;
+  errors.reset
+end

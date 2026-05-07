@@ -1,0 +1,7 @@
+proc main
+  put 1 2 3 ;
+  with main
+    put 4 5 ;
+  end
+  print "Stack size: " size ;
+end

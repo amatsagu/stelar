@@ -1,0 +1,6 @@
+proc main
+  5 0
+  for pop pop i
+    print "Iteration: " i ;
+  end
+end

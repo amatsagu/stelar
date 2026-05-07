@@ -1,0 +1,13 @@
+proc main
+  10 20 >
+  if
+    print "10 > 20 is false, this shouldn't print" ;
+  else
+    print "10 <= 20 is true" ;
+  end
+
+  1 1 ==
+  if
+    print "Equality works" ;
+  end
+end
